@@ -23,26 +23,8 @@ public class PfxUtils {
             throws IOException, NoSuchAlgorithmException, CertificateException,
             NoSuchProviderException, KeyStoreException {
 
-        FileReader reader = new FileReader(keyFilePath);
-        PEMReader pem = new PEMReader(reader, new PasswordFinder() {
-            @Override
-            public char[] getPassword() {
-                return password.toCharArray();
-            }
-        });
-
-        PrivateKey privateKey = ((KeyPair) pem.readObject()).getPrivate();
-
-        pem.close();
-        reader.close();
-
-        reader = new FileReader(cerFilePath);
-        pem = new PEMReader(reader);
-
-        X509Certificate cert = (X509Certificate) pem.readObject();
-
-        pem.close();
-        reader.close();
+        PrivateKey privateKey = CertificateUtils.getPrivateFromPem(keyFilePath);
+        X509Certificate cert = CertificateUtils.getCertifivateFromPem(cerFilePath);
 
         saveAsPfx(privateKey, cert, pfxPath, password);
     }
@@ -53,7 +35,7 @@ public class PfxUtils {
             throws IOException, NoSuchProviderException, KeyStoreException,
             CertificateException, NoSuchAlgorithmException {
 
-        FileOutputStream fos = new FileOutputStream(new File("D:/testpfx.pfx"));
+        FileOutputStream fos = new FileOutputStream(new File(pfxPath));
         KeyStore store = KeyStore.getInstance("PKCS12", "BC");
 
         store.load(null);

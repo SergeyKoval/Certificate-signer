@@ -4,11 +4,15 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.openssl.PEMReader;
+import org.bouncycastle.openssl.PasswordFinder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
 import javax.security.auth.x500.X500Principal;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.*;
@@ -42,6 +46,31 @@ public class CertificateUtils {
 
     public String getProviderName() {
         return providerName;
+    }
+
+
+    public static PrivateKey getPrivateFromPem(String keyPemPath) throws IOException {
+        FileReader reader = new FileReader(keyPemPath);
+        PEMReader pem = new PEMReader(reader);
+        PrivateKey key = ((KeyPair) pem.readObject()).getPrivate();
+
+        pem.close();
+        reader.close();
+
+        return key;
+    }
+
+
+    public static X509Certificate getCertifivateFromPem(String cerFilePath) throws IOException {
+        FileReader reader = new FileReader(cerFilePath);
+        PEMReader pem = new PEMReader(reader);
+
+        X509Certificate cert = (X509Certificate) pem.readObject();
+
+        pem.close();
+        reader.close();
+
+        return cert;
     }
 
 

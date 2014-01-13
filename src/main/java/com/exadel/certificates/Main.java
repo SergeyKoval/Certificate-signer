@@ -44,9 +44,9 @@ public class Main {
 
         // Generate keys for self-signed certificate (rootCert)
         // and certificate signed by root
-        KeyUtils keyUtils = KeyUtils.getInstance(KEY_SIZE, KEY_GEN_ALG, BouncyCastleProvider.PROVIDER_NAME);
-        KeyPair rootKeys = keyUtils.generateKeys();
-        KeyPair testKeys = keyUtils.generateKeys();
+        KeyGenUtils keyGenUtils = KeyGenUtils.getInstance(KEY_SIZE, KEY_GEN_ALG, BouncyCastleProvider.PROVIDER_NAME);
+        KeyPair rootKeys = keyGenUtils.generateKeys();
+        KeyPair testKeys = keyGenUtils.generateKeys();
         // --------------------------------------------------------
 
         // Create root certificate
@@ -76,13 +76,7 @@ public class Main {
         PemUtils.saveAsFile(testKeys.getPrivate(), SIGNED_PRIV_PATH);
         // --------------------------------------------------------
 
-        // Get certificate from keystore
-
-        // Get certificate from file
-
-
-
-
+        PfxUtils.saveAsPfx(ROOT_PRIV_PATH, ROOT_CERT_PATH, PFX_PATH, PFX_PASS);
 
 
         // Certificate validation

@@ -3,14 +3,14 @@ package com.exadel.certificates.util;
 
 import java.security.*;
 
-public class KeyUtils {
+public class KeyGenUtils {
 
     private KeyPairGenerator keysGen;
 
-    private static KeyUtils instance;
+    private static KeyGenUtils instance;
 
 
-    private KeyUtils(int keySize, String algorithm, String providerName)
+    private KeyGenUtils(int keySize, String algorithm, String providerName)
             throws NoSuchProviderException, NoSuchAlgorithmException {
 
         keysGen = KeyPairGenerator.getInstance(algorithm, providerName);
@@ -23,11 +23,11 @@ public class KeyUtils {
     }
 
 
-    public static KeyUtils getInstance(int keySize, String algorithm, String providerName)
+    public static KeyGenUtils getInstance(int keySize, String algorithm, String providerName)
             throws NoSuchProviderException, NoSuchAlgorithmException {
 
         if (instance == null) {
-            instance = new KeyUtils(keySize, algorithm, providerName);
+            instance = new KeyGenUtils(keySize, algorithm, providerName);
         }
 
         return instance;
