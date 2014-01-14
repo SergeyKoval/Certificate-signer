@@ -79,6 +79,12 @@ public class Main {
         PfxUtils.saveAsPfx(ROOT_PRIV_PATH, ROOT_CERT_PATH, PFX_PATH, PFX_PASS);
 
 
+        /* // Get certificate + private from keystore
+        keyStore = KeyStoreUtils.getKeyStore(STORE_PATH, STORE_TYPE, STORE_PASS);
+        X509Certificate cert = keyStore.getCertificate("alias");
+        PrivateKey pkey = keyStore.getKey("alias", STORE_PASS);
+        */
+
         // Certificate validation
         // name.checkValidity(new Date());
         // name.verify(resultCertificate.getPublicKey());
