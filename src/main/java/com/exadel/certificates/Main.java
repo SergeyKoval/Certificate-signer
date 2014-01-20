@@ -29,8 +29,10 @@ public class Main {
     public static final String ROOT_CN = "mdp";
     public static final String SIGNED_CN = "mdp default";
 
-    public static final String PFX_PATH = "D:/mdp_default.pfx";
-    public static final String PFX_PASS = "LsmbHqnO5pQlKsmo9VHK";
+    public static final String ROOT_PFX_PATH = "D:/root.pfx";
+    public static final String ROOT_PFX_PASS = "LsmbHqnO5pQlKsmo9VHK";
+    public static final String CERT_PFX_PATH = "D:/mdp_default.pfx";
+    public static final String CERT_PFX_PASS = "vregfetrgsgdfew";
 
     public static final String STORE_PATH = "D:/serverstore";
     public static final String STORE_TYPE = "JKS";
@@ -41,9 +43,9 @@ public class Main {
 
 
     public static void main(String[] args) throws Exception {
-
-        CertificateUtils certBuilder = CertificateUtils.getInstance(new BouncyCastleProvider());
-        certBuilder.setSigningAlg(SIGNING_ALG); // It isn't necessary. SHA256WithRSAEncryption used by default
+        X509Certificate rootCert;
+        PrivateKey rootPrivateKey;
+        CertificateUtils certBuilder = CertificateUtils.getInstance(new BouncyCastleProvider(), SIGNING_ALG);
 
         // Generate keys for self-signed certificate (rootCert)
         // and certificate signed by root
@@ -53,32 +55,30 @@ public class Main {
         // --------------------------------------------------------
 
         // Create root certificate
-//        X509Certificate rootCert = certBuilder.newSelfSignedCertificate(new X500Name("CN=" + ROOT_CN), rootKeys, START_DATE, END_DATE);
+//        rootCert = generateRootCert(certBuilder, rootKeys);
+//        rootPrivateKey = rootKeys.getPrivate();
         // Get certificate + private from keystore
-        KeyStore keyStore = KeyStoreUtils.getKeyStore(STORE_PATH, STORE_TYPE, STORE_PASS);
-        X509Certificate rootCert = (X509Certificate) keyStore.getCertificate(ROOT_CN);
-        PrivateKey pkey = (PrivateKey) keyStore.getKey(ROOT_CN, STORE_PASS.toCharArray());
-
+        rootCert = loadRootCertFromKeyStore();
+        rootPrivateKey = loadPrivateKeyFromKeyStore();
         // --------------------------------------------------------
 
-        // Save root certificate to keyStore
-        addRootCertToServerStoreAndSaveStore(rootCert, rootKeys.getPrivate());
-        addRootCertToTrustedStoreAndSaveStore(rootCert);
-
+        // Save root certificate to stores
+//        addRootCertToServerStoreAndSaveStore(rootCert, rootKeys.getPrivate());
+//        addRootCertToTrustedStoreAndSaveStore(rootCert);
         // --------------------------------------------------------
 
         // Create signed certificate
-        X509Certificate testCert = certBuilder.newCertificate(rootCert, rootKeys.getPrivate(), new X500Name("CN=" + SIGNED_CN), testKeys, START_DATE, END_DATE);
-//        X509Certificate testCert = certBuilder.newCertificate(rootCert, pkey, new X500Name("CN=" + SIGNED_CN), testKeys, START_DATE, END_DATE);
+        X509Certificate testCert = certBuilder.newCertificate(rootCert, rootPrivateKey, new X500Name("CN=" + SIGNED_CN), testKeys, START_DATE, END_DATE);
         // --------------------------------------------------------
 
         // Save certificates as PEM to generate pfx by OPENSSL
-        saveRootCertToDisk(rootCert, rootKeys.getPrivate());
+        saveRootCertToDisk(rootCert, rootPrivateKey);
         saveCertToDisk(testCert, testKeys.getPrivate());
         // --------------------------------------------------------
 
-//        PfxUtils.saveAsPfx(ROOT_PRIV_PATH, ROOT_CERT_PATH, PFX_PATH, PFX_PASS);
-//        PfxUtils.saveAsPfx(SIGNED_PRIV_PATH, SIGNED_CERT_PATH, PFX_PATH, PFX_PASS);
+        //Save certificates to pfx files
+        PfxUtils.saveAsPfx(ROOT_PRIV_PATH, ROOT_CERT_PATH, ROOT_PFX_PATH, ROOT_PFX_PASS);
+        PfxUtils.saveAsPfx(SIGNED_PRIV_PATH, SIGNED_CERT_PATH, CERT_PFX_PATH, CERT_PFX_PASS);
     }
 
     private static void addRootCertToServerStoreAndSaveStore(X509Certificate rootCert, PrivateKey pkey) throws Exception {
@@ -101,5 +101,19 @@ public class Main {
     private static void saveCertToDisk(X509Certificate cert, PrivateKey pkey) throws Exception {
         PemUtils.saveAsFile(cert, SIGNED_CERT_PATH);
         PemUtils.saveAsFile(pkey, SIGNED_PRIV_PATH);
+    }
+
+    private static X509Certificate generateRootCert(CertificateUtils certBuilder, KeyPair rootKeys) throws Exception {
+        return certBuilder.newSelfSignedCertificate(new X500Name("CN=" + ROOT_CN), rootKeys, START_DATE, END_DATE);
+    }
+
+    private static X509Certificate loadRootCertFromKeyStore() throws Exception {
+        KeyStore keyStore = KeyStoreUtils.getKeyStore(STORE_PATH, STORE_TYPE, STORE_PASS);
+        return (X509Certificate) keyStore.getCertificate(ROOT_CN);
+    }
+
+    private static PrivateKey loadPrivateKeyFromKeyStore() throws Exception {
+        KeyStore keyStore = KeyStoreUtils.getKeyStore(STORE_PATH, STORE_TYPE, STORE_PASS);
+        return (PrivateKey) keyStore.getKey(ROOT_CN, STORE_PASS.toCharArray());
     }
 }

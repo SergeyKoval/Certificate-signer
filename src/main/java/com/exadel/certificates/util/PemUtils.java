@@ -13,7 +13,6 @@ public class PemUtils {
 
     }
 
-
     public static void saveAsFile(Object savingObject, String path) throws IOException {
         PEMWriter pemWriter = new PEMWriter(new PrintWriter(new File(path)));
         pemWriter.writeObject(savingObject);

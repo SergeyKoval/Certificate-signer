@@ -5,13 +5,11 @@ import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.openssl.PEMReader;
-import org.bouncycastle.openssl.PasswordFinder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
 import javax.security.auth.x500.X500Principal;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -32,22 +30,6 @@ public class CertificateUtils {
         Security.addProvider(provider);
         providerName = provider.getName();
     }
-
-
-    public String getSigningAlg() {
-        return signingAlg;
-    }
-
-
-    public void setSigningAlg(String signingAlg) {
-        this.signingAlg = signingAlg;
-    }
-
-
-    public String getProviderName() {
-        return providerName;
-    }
-
 
     public static PrivateKey getPrivateFromPem(String keyPemPath) throws IOException {
         FileReader reader = new FileReader(keyPemPath);
@@ -74,30 +56,22 @@ public class CertificateUtils {
     }
 
 
-    public X509Certificate newCertificate(X509Certificate issuer, PrivateKey issuerPK, X500Name subject,
-                                          KeyPair keys, Date notBefore, Date notAfter)
-            throws NoSuchProviderException, NoSuchAlgorithmException, OperatorCreationException,
-            CertificateException, IOException {
+    public X509Certificate newCertificate(X509Certificate issuer, PrivateKey issuerPK, X500Name subject, KeyPair keys, Date notBefore, Date notAfter)
+            throws NoSuchProviderException, NoSuchAlgorithmException, OperatorCreationException, CertificateException, IOException {
 
         BigInteger serial = generateSerial();
         X500Principal subjPrincipal = new X500Principal(subject.toString());
-
-        X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer,
-                serial, notBefore, notAfter, subjPrincipal, keys.getPublic());
+        X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer, serial, notBefore, notAfter, subjPrincipal, keys.getPublic());
 
         return buildSignedCertificate(issuerPK, certBuilder);
     }
 
 
-    public X509Certificate newSelfSignedCertificate(X500Name subject, KeyPair keys,
-                                                    Date notBefore, Date notAfter)
-            throws NoSuchProviderException, NoSuchAlgorithmException, CertificateException,
-            OperatorCreationException, IOException {
+    public X509Certificate newSelfSignedCertificate(X500Name subject, KeyPair keys, Date notBefore, Date notAfter)
+            throws NoSuchProviderException, NoSuchAlgorithmException, CertificateException, OperatorCreationException, IOException {
 
         BigInteger serial = generateSerial();
-
-        X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(subject,
-                serial, notBefore, notAfter, subject, keys.getPublic());
+        X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(subject, serial, notBefore, notAfter, subject, keys.getPublic());
 
         return buildSignedCertificate(keys.getPrivate(), certBuilder);
     }
@@ -118,12 +92,9 @@ public class CertificateUtils {
     }
 
 
-    private ContentSigner buildSigner(String signatureAlgorithm,
-                                      String providerName, PrivateKey privateKey)
-            throws OperatorCreationException {
-
+    private ContentSigner buildSigner(String signatureAlgorithm, String providerName, PrivateKey privateKey) throws OperatorCreationException {
         JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithm);
-        signerBuilder = signerBuilder.setProvider(providerName); // TODO don't know, need i to reinit signerBuilder or not
+        signerBuilder = signerBuilder.setProvider(providerName);
 
         return signerBuilder.build(privateKey);
     }
@@ -131,21 +102,20 @@ public class CertificateUtils {
 
     private JcaX509CertificateConverter getCertificateConverter(String provider) {
         JcaX509CertificateConverter converter = new JcaX509CertificateConverter();
-        converter = converter.setProvider(provider); // TODO don't know, need i to reinit signerBuilder or not
+        converter = converter.setProvider(provider);
 
         return converter;
     }
 
 
-    public static CertificateUtils getInstance(Provider provider) throws OperatorCreationException,
-            CertificateException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
+    public static CertificateUtils getInstance(Provider provider, String signingAlg)
+            throws OperatorCreationException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
 
         if (instance == null) {
             instance = new CertificateUtils(provider);
+            instance.signingAlg = signingAlg;
         }
 
         return instance;
     }
 }
-
-// TODO Make the function "extendCertificatePeriod"
